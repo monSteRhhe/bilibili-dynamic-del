@@ -55,7 +55,6 @@ function getLuckyDraw(){
     w.css("background-color", "#f1c40f");
     w = w.parents(".card");
     w.css("background-color", "#2ecc71");
-    console.log(w[0])
     w[0].querySelectorAll(".child-button")[1].click();
     setTimeout(clickDel, delay);
 }
