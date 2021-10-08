@@ -1,5 +1,5 @@
 var needDelDeled = true, // 是否删除"源动态已被删除"的转发动态
-    delay = 1000; // 延迟时间
+    delay = 800; // 延迟时间
 
 var w = '', d = '';
 
