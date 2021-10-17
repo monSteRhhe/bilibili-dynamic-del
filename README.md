@@ -1,7 +1,7 @@
 # bilibili-dynamic-del
 用来删除B站已开奖的转发抽奖动态和“源动态已被删除”的动态。
 
-复制 ``autodel.js` 里的内容到 `F12→Console` 回车使用
+复制 `autodel.js` 里的内容到 `F12→Console` 回车使用
 
 目前用起来可能还是会有各种各样的问题，影响不大。
 
