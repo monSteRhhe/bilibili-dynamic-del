@@ -32,37 +32,26 @@ function process(){
 
 /* 筛选w */
 function filterW(w){
-    if(w.length > 0) {
-        w[0].click();
+    var business_id = w[0].attr('click-href').split('?')[1].split('&')[0].split('=')[1];
+    var apipref = 'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id=';
 
-        var iframe = document.getElementsByTagName('iframe')[1];
-        iframe.onload = function(){
-            if(iframe.contentWindow.document.getElementsByClassName('countdown')[0] != null) {
-                destroyIframe(iframe);
-                setTimeout(function() {
-                    $('div.close-button').click();
-                    $(w[0]).parents('.card').remove(); // 移除未开奖的转发抽奖动态
-                }, delay);
-                setTimeout(process, delay);
+    if(w.length > 0) {
+        $.ajax({
+            url: apipref + business_id,
+            type: 'GET',
+            async: false,
+            success: function(result) {
+                console.log(result.data.status);
+                if(result.data.status == '0') {
+                    setTimeout($(w[0]).parents('.card').remove(), delay); // 移除未开奖的转发抽奖动态
+                    setTimeout(process, delay);
+                }
+                else setTimeout(getLuckyDraw(w), delay); // 删除已开奖的转发抽奖动态
             }
-            else {
-                destroyIframe(iframe);
-                setTimeout(function() {$('div.close-button').click();}, delay);
-                setTimeout(getLuckyDraw(w), delay); // 删除已开奖的转发抽奖动态
-            }
-        }
+        })
     }
     else if($('div.content > div.div-load-more > div.load-more').length > 0) setTimeout(start, reload_delay);
-    else if($('div.content > div.div-load-more > div.no-more').length > 0) return;
-}
-
-
-/* 释放iframe内存 */
-function destroyIframe(iframe) {
-    iframe.contentWindow.document.close();
-    iframe.contentWindow.document.clear();
-    iframe.src = 'about:blank';
-    iframe.remove();
+    else if($('div.content > div.div-load-more > div.no-more').length > 0) return false;
 }
 
 
