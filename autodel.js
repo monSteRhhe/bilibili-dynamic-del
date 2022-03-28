@@ -17,7 +17,9 @@ function process(){
         if ($(this).find('span[click-title="抽奖详情"]').length > 0) {
             setTimeout(filterW(this), delay); // 处理转发互动抽奖动态
         } else if ($(this).find('.deleted-text').length > 0) {
-            setTimeout(getDel(this), delay); // 处理源动态已删除的转发动态
+            if(needDeld) {
+                setTimeout(getDel(this), delay); // 处理源动态已删除的转发动态
+            }
         } else {
             $(this).parent().remove(); // 移除其他动态
         }
