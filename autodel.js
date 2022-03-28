@@ -33,7 +33,7 @@ function process(){
 /* 筛选w */
 function filterW(w){
     var business_id = w[0].attr('click-href').split('?')[1].split('&')[0].split('=')[1];
-    var apipref = 'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id=';
+    var apipref = 'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id='; // api前缀
 
     if(w.length > 0) {
         $.ajax({
@@ -41,7 +41,6 @@ function filterW(w){
             type: 'GET',
             async: false,
             success: function(result) {
-                console.log(result.data.status);
                 if(result.data.status == '0') {
                     setTimeout($(w[0]).parents('.card').remove(), delay); // 移除未开奖的转发抽奖动态
                     setTimeout(process, delay);
