@@ -1,7 +1,7 @@
 'use strict';
 
 var needDeld = true, // 是否删除'源动态已被删除'的转发动态
-    delay = 1000; // 操作延迟时间
+    delay = 800; // 操作延迟时间
 
 
 /* d/w */
@@ -16,9 +16,13 @@ function process() {
     var d = new Array(); // 源动态已删除
 
     $('div.card').each(function() {
-        if ($(this).find('span[click-title="抽奖详情"]').length > 0) w.push($(this).find('span[click-title="抽奖详情"]'));
-        else if ($(this).find('.deleted-text').length > 0) d.push($(this).find('.deleted-text'));
-        else $(this).parent().remove(); // 移除其他动态
+        if ($(this).find('span[click-title="抽奖详情"]').length > 0) {
+            w.push($(this).find('span[click-title="抽奖详情"]'));
+        } else if ($(this).find('.deleted-text').length > 0) {
+            if(needDeld) d.push($(this).find('.deleted-text'));
+        } else {
+            $(this).parent().remove(); // 移除其他动态
+        }
     })
 
     if (d.length && needDeld) setTimeout(getDel(d), delay); // 处理源动态已删除的转发动态
@@ -37,7 +41,7 @@ function filterW(w) {
             type: 'GET',
             async: false,
             success: function(result) {
-                console.log()
+                console.log(result.data.status);
                 if(result.data.status == '0') {
                     setTimeout($(w[0]).parents('.card').parent().remove(), delay); // 移除未开奖的转发抽奖动态
                     setTimeout(process, delay);
