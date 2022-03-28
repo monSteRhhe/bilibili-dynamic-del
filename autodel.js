@@ -6,11 +6,10 @@ var needDeld = true, // 是否删除'源动态已被删除'的转发动态
     // 每批加载12个动态
 
 /* 处理动态 */
-function process(){
+function process() {
     if($(document).scrollTop() == 0) {
         $(document).scrollTop(150); // 向下滚动一段距离
     }
-
     $('.fold-text, .expand-btn').click(); // 展开动态
 
     $('div.card').each(function() {
@@ -27,7 +26,7 @@ function process(){
 }
 
 /* 筛选抓发的互动抽奖动态 */
-function filterW(card){
+function filterW(card) {
     var business_id = $(card).find('span[click-title="抽奖详情"]').attr('click-href').split('?')[1].split('&')[0].split('=')[1]; // 截取参数里的business_id
     var apipref = 'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id='; // api前缀
 
@@ -36,7 +35,7 @@ function filterW(card){
         type: 'GET',
         async: false,
         success: function(result) {
-            //console.log(result.data.status); // 0 - 未开奖; 2 - 已开奖
+            console.log(result.data.status); // 0 - 未开奖; 2 - 已开奖
             if(result.data.status == '0') setTimeout($(card).parent().remove(), delay); // 移除未开奖的转发抽奖动态
             else setTimeout(getLuckyDraw(card), delay); // 删除已开奖的转发抽奖动态
         }
@@ -44,30 +43,28 @@ function filterW(card){
 }
 
 /* 删除转发抽奖动态 */
-function getLuckyDraw(card){
+function getLuckyDraw(card) {
     $(card).find('span[click-title="抽奖详情"]').css('background-color', '#f1c40f');
     $(card).css('background-color', '#2ecc71');
-    
     $(card).find('.child-button')[1].click();
     setTimeout(clickDel, delay);
 }
 
 /* 删除'源动态已被删除'的转发动态 */
-function getDel(card){
+function getDel(card) {
     $(card).find('.deleted-text').css('background-color', '#8e44ad');
     $(card).css('background-color', '#2ecc71');
-
     $(card).find('.child-button')[1].click();
     setTimeout(clickDel, delay);
 }
 
 /* 确定删除 */
-function clickDel(){
+function clickDel() {
     $('div.popup-content-ctnr').find('.bl-button--primary').click(); // 点确定
 }
 
 /* 判断是否为当前账号 */
-function accountCheck(){
+function accountCheck() {
     var cookieArr = document.cookie.split(';'); // cookies
     for(var i = 0; i < cookieArr.length; i++) {
         var ckstr = cookieArr[i].split('=')[0]; // 名称
