@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Bili.Dynamics.AutoDel
-// @namespace    http://tampermonkey.net/
+// @namespace    https://github.com/monSteRhhe/bilibili-dynamic-del/raw/main/bili-dynamics-autodel.user.js
 // @version      1.4.0
 // @description  删除B站转发的已开奖动态。
 // @author       monSteRhhe
