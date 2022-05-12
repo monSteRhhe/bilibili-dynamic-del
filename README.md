@@ -13,7 +13,7 @@
 
 ------
 
-无差别删除转发的互动抽奖动态和“源动态已被删除”的动态（[来源](https://gwliang.com/2020/03/12/bilibili-del-Luck-draw-dynamic)）：
+无差别删除转发的互动抽奖动态和“源动态已被删除”的动态（[来源](https://www.bilibili.com/video/av95622019/)）：
 
 ```javascript
 var needDelDeled = true,
