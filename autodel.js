@@ -6,14 +6,14 @@ var needDeld = true, // 是否删除'源动态已被删除'的转发动态
 
 /* d/w */
 function process() {
-    setTimeout(function() {
-        if($('.expand-btn').html() == '展开') $('.expand-btn').click(); // 展开动态
-    }, 500)
+    $('.expand-btn').each(function() {
+        if($(this).html() == '展开') $(this).click();
+    })
 
-    if($(document).scrollTop() == 0) $(document).scrollTop(150); // 向下滚动一段距离
+    if($(document).scrollTop() != 0) $(document).scrollTop(0); // 确保位置在顶部
 
-    var w = new Array(); // 互动抽奖
-    var d = new Array(); // 源动态已删除
+    var w = new Array(), // 互动抽奖
+        d = new Array(); // 源动态已删除
 
     $('div.card').each(function() {
         if ($(this).find('span[click-title="抽奖详情"]').length > 0) {
@@ -25,8 +25,19 @@ function process() {
         }
     })
 
-    if (d.length && needDeld) setTimeout(getDel(d), delay); // 处理源动态已删除的转发动态
-    else setTimeout(filterW(w), delay); // 处理转发互动抽奖动态
+    if(document.getElementsByClassName('content')[0].children.length == 1) {
+        if(document.getElementsByClassName('end-text')[0] != null) {
+            //console.log('Terminate.')
+            return false;
+        }
+        if(document.getElementsByClassName('load-more')[0] != null) {
+            // console.log('Loading more...');
+            setTimeout(loadMore, delay);
+        }
+    } else {
+        if (d.length && needDeld) setTimeout(getDel(d), delay); // 处理源动态已删除的转发动态
+        else setTimeout(filterW(w), delay); // 处理转发互动抽奖动态/
+    }
 }
 
 
@@ -41,12 +52,11 @@ function filterW(w) {
             type: 'GET',
             async: false,
             success: function(result) {
-                console.log(result.data.status);
+                // console.log(result.data.status);
                 if(result.data.status == '0') {
                     setTimeout($(w[0]).parents('.card').parent().remove(), delay); // 移除未开奖的转发抽奖动态
                     setTimeout(process, delay);
-                }
-                else setTimeout(getLuckyDraw(w), delay); // 删除已开奖的转发抽奖动态
+                } else setTimeout(getLuckyDraw(w), delay); // 删除已开奖的转发抽奖动态
             }
         })
     }
@@ -78,13 +88,18 @@ function clickDel() {
 }
 
 
+/* 点击加载更多 */
+function loadMore() {
+    $('.load-more').click(); // 点击触发加载动态
+    setTimeout(process, 5000); // 延迟5s执行
+}
+
+
 /* 判断是否为当前账号 */
 function accountCheck() {
     var cookieArr = document.cookie.split(';');
     for(var i = 0; i < cookieArr.length; i++) {
-        var ckstr = cookieArr[i].split('=')[0];
-        var cknum = cookieArr[i].split('=')[1];
-        if(ckstr == ' DedeUserID') return window.location.pathname.split('/')[1] == cknum;
+        if(cookieArr[i].split('=')[0] == ' DedeUserID') return window.location.pathname.split('/')[1] == cookieArr[i].split('=')[1];
     }
 }
 
