@@ -8,9 +8,11 @@
 
 2. `bili-dynamic-autodel.user.js` 需要油猴，在油猴安装后在B站网站内点击油猴菜单里的 `开始执行` 使用。
 
-运行中B站如果卡住属正常现象。
+   [点击安装](https://raw.githubusercontent.com/monSteRhhe/bilibili-dynamic-del/main/bili-dynamic-autodel.user.js)
 
 ​    
+
+运行中B站如果卡住属正常现象。
 
 随缘更新。
 
