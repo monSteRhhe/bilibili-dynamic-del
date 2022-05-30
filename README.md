@@ -1,4 +1,4 @@
-<div align="center"><img src="./docs/banner.webp"/></div>
+<div align="center"><img src="./docs/headerpic.webp"/></div>
 
 # Bili.Dynamic.AutoDel
 
