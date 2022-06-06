@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bili.Dynamic.AutoDel
 // @namespace    http://tampermonkey.net/
-// @version      2.0.0
+// @version      2.0.1
 // @description  删除B站转发的已开奖动态和源动态已被删除的动态。
 // @author       monSteRhhe
 // @match        https://*.bilibili.com/*
@@ -72,6 +72,7 @@
                 text: '你已经到达了世界的尽头。',
                 title: '[Bili.Dynamic.AutoDel]',
                 image: 'https://www.bilibili.com/favicon.ico',
+                timeout: 1000,
             });
             console.log('[Bili.Dynamic.AutoDel] 你已经到达了世界的尽头。')
         }
@@ -101,6 +102,7 @@
                         text: re_id_str + ' 删除成功。',
                         title: '[Bili.Dynamic.AutoDel]',
                         image: 'https://www.bilibili.com/favicon.ico',
+                        timeout: 1000,
                     });
                 }
             }
@@ -132,6 +134,7 @@
                 text: '未检测到登录状态。',
                 title: '[Bili.Dynamic.AutoDel]',
                 image: 'https://www.bilibili.com/favicon.ico',
+                timeout: 1000,
             });
         }
     })
