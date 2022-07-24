@@ -92,7 +92,6 @@
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify({"dyn_id_str": re_id_str}),
             async: false,
-            crossDomain: true,
             xhrFields: {
                 withCredentials: true
             },
