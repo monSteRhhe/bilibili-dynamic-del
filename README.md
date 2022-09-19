@@ -16,3 +16,6 @@
 
 随缘更新。
 
+​    
+
+更多好用的可见：[awesome-bilibili-extra](https://github.com/HCLonely/awesome-bilibili-extra)
