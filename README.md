@@ -1,20 +1,30 @@
-<div align="center"><img src="./docs/headerpic.webp"/></div>
+<div align="center"><img src="./docs/top.webp"/></div>
 
 # Bili.Dynamic.AutoDel
 
-自动删除B站 **已开奖的转发抽奖动态** 和 **源动态已被删除** 的动态。
+## 功能
 
-1. 复制 `bili-dynamic-autodel.js` 里的内容到B站 **动态** 页面 `F12 → Console` 开发者工具的控制台按回车使用。
+1. 自动删除B站 **已开奖的转发抽奖** 动态和 **源动态已被删除** 的动态
+2. 选择性地删除自己转发的 **某个用户动态** 的转发动态
 
-2. `bili-dynamic-autodel.user.js` 需要油猴，在油猴安装后在B站网站内点击油猴菜单里的 `开始执行` 使用。
+## 用法
 
-   [点击安装](https://raw.githubusercontent.com/monSteRhhe/bilibili-dynamic-del/main/bili-dynamic-autodel.user.js)
+首先需要安装油猴扩展，然后安装用户脚本。
 
-​    
+[点击安装](https://raw.githubusercontent.com/monSteRhhe/bilibili-dynamic-del/main/bili-dynamic-autodel.user.js)
 
-运行中B站如果卡住属正常现象。
+之后可以在B站网站内点击油猴菜单里的按钮使用：
 
-随缘更新。
+![菜单按钮](./docs/menu.png)
+
+1. 自动判断：就是自动删除源动态有互动抽奖功能且已经开奖的和源动态已被删除的转发动态
+2. 指定用户：就是点击后在弹出窗口输入用户名或者该用户的数字UID并确定，能够删除源动态是这个用户动态的转发动态
+
+## 其他
+
+运行中B站如果卡住属于正常现象，等待执行结束即可。
+
+随缘更新~
 
 ​    
 
