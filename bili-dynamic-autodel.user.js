@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bili.Dynamic.AutoDel
 // @namespace    https://github.com/
-// @version      23.01.16
+// @version      23.01.28
 // @description  删除B站转发的已开奖动态和源动态已被删除的动态。
 // @author       monSteRhhe
 // @match        http*://*.bilibili.com/*
@@ -32,14 +32,17 @@
                                 deleteDynamic(this)
                             }
 
-                            //* status = 0->未开奖，2->已开奖，null->源动态没有“互动抽奖”
+                            var item = this;
+                            var orig_id_str = this.orig.id_str; // 源动态ID
+
                             $.ajax({
-                                url: lottery_api + this.orig.id_str,
+                                url: lottery_api + orig_id_str,
                                 type: 'GET',
                                 async: false,
                                 success: function(result) {
+                                    //* status = 0->未开奖，2->已开奖，null->源动态没有“互动抽奖”
                                     if(result.data.status == '2') {
-                                        deleteDynamic(this);
+                                        deleteDynamic(item);
                                     }
                                 }
                             })
