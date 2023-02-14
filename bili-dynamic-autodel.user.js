@@ -1,15 +1,16 @@
 // ==UserScript==
 // @name         Bili.Dynamic.AutoDel
 // @namespace    https://github.com/
-// @version      23.01.28
+// @version      23.02.14
 // @description  删除B站转发的已开奖动态和源动态已被删除的动态。
 // @author       monSteRhhe
 // @match        http*://*.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
 // @grant        GM_registerMenuCommand
 // @grant        GM_notification
-// @require      https://code.jquery.com/jquery-3.6.3.min.js
+// @require      https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js
 // ==/UserScript==
+/* globals axios, waitForKeyElements */
 
 (function() {
     'use strict';
@@ -19,55 +20,52 @@
         var dynamics_api = 'https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?offset=' + offset + '&host_mid=' + duid; // 动态API
         var lottery_api = 'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id='; // 互动抽奖API
 
-        $.ajax({
-            url: dynamics_api,
-            type: 'GET',
-            async: false,
-            success: function(result) {
-                $.each(result.data.items, function() {
-                    if(this.orig != null) {
-                        if(mode == 'auto') {
-                            //* "源动态已被作者删除"->源动态ID为null
-                            if(this.orig.id_str == null) {
-                                deleteDynamic(this)
-                            }
-
-                            var item = this;
-                            var orig_id_str = this.orig.id_str; // 源动态ID
-
-                            $.ajax({
-                                url: lottery_api + orig_id_str,
-                                type: 'GET',
-                                async: false,
-                                success: function(result) {
-                                    //* status = 0->未开奖，2->已开奖，null->源动态没有“互动抽奖”
-                                    if(result.data.status == '2') {
-                                        deleteDynamic(item);
-                                    }
-                                }
-                            })
+        axios({
+            url: dynamics_api
+        })
+        .then(function(response) {
+            var items_list = response.data.data.items
+            items_list.forEach(function(data) {
+                if(data.orig != null) {
+                    if(mode == 'auto') {
+                        //* "源动态已被作者删除"->源动态ID为null
+                        if(data.orig.id_str == null) {
+                            deleteDynamic(data)
                         }
 
-                        if(mode == 'user') {
-                            //* 用户名/UID判断
-                            if(input == this.orig.modules.module_author.name || parseInt(input) == this.orig.modules.module_author.mid) {
-                                deleteDynamic(this);
+                        var item = data;
+                        var orig_id_str = data.orig.id_str; // 源动态ID
+
+                        axios({
+                            url: lottery_api + orig_id_str
+                        })
+                        .then(function(response) {
+                            //* status = 0->未开奖，2->已开奖，null->源动态没有“互动抽奖”
+                            if(response.data.data.status == '2') {
+                                deleteDynamic(item);
                             }
+                        })
+                    }
+
+                    if(mode == 'user') {
+                        //* 判断用户名/UID
+                        if(input == data.orig.modules.module_author.name || parseInt(input) == data.orig.modules.module_author.mid) {
+                            deleteDynamic(data);
                         }
                     }
-                })
-
-                var offset = result.data.offset;
-                if(offset != '') {
-                    getDynamics(duid, offset, mode, input);
-                } else {
-                    GM_notification({
-                        text: '你已经到达了世界的尽头。',
-                        title: '[Bili.Dynamic.AutoDel]',
-                        image: 'https://www.bilibili.com/favicon.ico',
-                        timeout: 2000,
-                    });
                 }
+            })
+
+            var offset = response.data.data.offset;
+            if(offset != '') {
+                getDynamics(duid, offset, mode, input);
+            } else {
+                GM_notification({
+                    text: '你已经到达了世界的尽头。',
+                    title: '[Bili.Dynamic.AutoDel]',
+                    image: 'https://www.bilibili.com/favicon.ico',
+                    timeout: 2000,
+                });
             }
         })
     }
@@ -78,24 +76,22 @@
         var delete_api = 'https://api.bilibili.com/x/dynamic/feed/operate/remove?csrf=' + getCookie(' bili_jct');
         var re_id_str = item.id_str; // 转发动态ID
 
-        $.ajax({
+        axios({
+            method: 'post',
             url: delete_api,
-            type: 'POST',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify({"dyn_id_str": re_id_str}),
-            async: false,
-            xhrFields: {
-                withCredentials: true
-            },
-            success: function(result) {
-                if(result.code == '0') {
-                    GM_notification({
-                        text: re_id_str + ' 删除成功。',
-                        title: '[Bili.Dynamic.AutoDel]',
-                        image: 'https://www.bilibili.com/favicon.ico',
-                        timeout: 1000,
-                    });
-                }
+            withCredentials: true, // 跨域使用凭证
+            data: {
+                dyn_id_str: re_id_str
+            }
+        })
+        .then(function(response) {
+            if(response.data.code == '0') {
+                GM_notification({
+                    text: re_id_str + ' 删除成功。',
+                    title: '[Bili.Dynamic.AutoDel]',
+                    image: 'https://www.bilibili.com/favicon.ico',
+                    timeout: 2000,
+                });
             }
         })
     }
