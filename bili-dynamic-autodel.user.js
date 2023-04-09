@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bili.Dynamic.AutoDel
 // @namespace    https://github.com/
-// @version      23.02.14
+// @version      2023.04.09
 // @description  删除B站转发的已开奖动态和源动态已被删除的动态。
 // @author       monSteRhhe
 // @match        http*://*.bilibili.com/*
@@ -75,6 +75,7 @@
         //* csrf参数 -> 从cookie获取bili_jct
         var delete_api = 'https://api.bilibili.com/x/dynamic/feed/operate/remove?csrf=' + getCookie(' bili_jct');
         var re_id_str = item.id_str; // 转发动态ID
+        console.log('[Bili.Auto.Del] ' + re_id_str); // 控制台输出动态的id
 
         axios({
             method: 'post',
