@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Bili.Dynamic.AutoDel
 // @namespace    https://github.com/
-// @version      2023.04.09
+// @version      2023.06.04
 // @description  删除B站转发的已开奖动态和源动态已被删除的动态。
 // @author       monSteRhhe
 // @match        http*://*.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
 // @grant        GM_registerMenuCommand
 // @grant        GM_notification
-// @require      https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js
+// @require      https://unpkg.com/axios/dist/axios.min.js
 // ==/UserScript==
 /* globals axios, waitForKeyElements */
 
@@ -21,10 +21,11 @@
         var lottery_api = 'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id='; // 互动抽奖API
 
         axios({
-            url: dynamics_api
+            url: dynamics_api,
+            withCredentials: true // 跨域使用凭证
         })
         .then(function(response) {
-            var items_list = response.data.data.items
+            var items_list = response.data.data.items;
             items_list.forEach(function(data) {
                 if(data.orig != null) {
                     if(mode == 'auto') {

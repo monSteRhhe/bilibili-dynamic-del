@@ -1,12 +1,10 @@
-<div align="center"><img src="./docs/top.webp"/></div>
-
-# Bili.Dynamic.AutoDel
+<div align="center"><img src="https://socialify.git.ci/monSteRhhe/bilibili-dynamic-del/image?font=Inter&language=1&name=1&pattern=Plus&stargazers=1&theme=Light"/></div>
 
 ## 功能
 
 1. 自动删除B站 **已开奖的转发抽奖** 动态和 **源动态已被删除** 的动态
 
-   > 这里已开奖的转发抽奖动态应该是带有![互动抽奖按钮](./docs/icon.png)的
+   > 这里已开奖的转发抽奖动态应该是带有![互动抽奖按钮](./screenshots/icon.png)的
 
 2. 自主选择删除转发的 **某个用户动态** 的转发动态
 
@@ -18,7 +16,7 @@
 
 之后可以在B站网站内点击油猴菜单里的按钮使用：
 
-![菜单按钮](./docs/menu.png)
+![菜单按钮](./screenshots/menu.png)
 
 1. 自动判断：自动删除源动态有互动抽奖且已经开奖的动态和源动态已被删除的转发动态
 2. 指定用户：点击后在弹出窗口输入用户名或者该用户的数字UID并确定，能够删除源动态是这个用户动态的转发动态
