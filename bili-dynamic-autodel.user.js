@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name         Bili.Dynamic.AutoDel
 // @namespace    https://github.com/
-// @version      2023.07.22
+// @version      2023.08.05
 // @description  删除B站转发的已开奖动态和源动态已被删除的动态。
 // @author       monSteRhhe
 // @match        http*://*.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
 // @grant        GM_info
+// @grant        GM_addStyle
+// @grant        GM_setValue
+// @grant        GM_getValue
 // @grant        GM_notification
 // @grant        GM_registerMenuCommand
 // @run-at       document-end
@@ -16,6 +19,114 @@
 
 (function() {
     'use strict';
+
+    /**
+     * 初始化数据的值
+     */
+    if (GM_getValue('set-unfollow') == undefined) {
+        GM_setValue('set-unfollow', false);
+    }
+    if (GM_getValue('unfollow-list') == undefined
+        || GM_getValue('unfollow-list').length != 0) {
+        GM_setValue('unfollow-list', []);
+    }
+
+    /**
+     * 弹窗样式
+     */
+    const style = `
+        .setting-content {
+            color: #000;
+            z-index: 10;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 310px;
+            background-color: #efecfa;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .setting-content .setting-header {
+            font-size: 25px;
+            line-height: 25px;
+            padding: 5px 20px;
+            margin-bottom: 10px;
+        }
+        .setting-content .setting-body {
+            width: 340px;
+            height: 190px;
+            margin: 0 auto;
+            padding: 10px 10px 0 10px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 15px;
+            overflow-y: auto;
+        }
+        .setting-content .setting-footer {
+            text-align: right;
+            padding: 17px 20px 17px 0;
+        }
+        .setting-content .setting-footer button {
+            cursor: pointer;
+            border-radius: 25px;
+            background-color: #ffffff;
+            border: none;
+            height: 30px;
+            min-width: 50px;
+            padding: 5px 10px;
+            font-size: 85%;
+        }
+        `;
+    GM_addStyle(style);
+
+    /**
+     * 打开设置弹窗
+     */
+    function openSettingWindow() {
+        // 创建弹窗
+        let main_window = document.createElement('div');
+        main_window.className = 'setting-popup';
+        main_window.innerHTML = `
+            <div class="setting-content">
+                <div class="setting-header">
+                    <span>设置<span>
+                </div>
+                <div class="setting-body">
+                    <div class="setting-item">
+                        <label>启用取关功能</label>
+                        <input type="checkbox" id="set-unfollow" />
+                    </div>
+                </div>
+                <div class="setting-footer">
+                    <button class="setting-close">关闭</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(main_window);
+
+        // 绑定点击事件
+        document.querySelector('.setting-close').addEventListener('click', closeSettingWindow);
+
+        // 设置选中状态
+        let checkbox_list = document.querySelectorAll('.setting-body input');
+        for (let node of checkbox_list) {
+            node.checked = GM_getValue(node.id);
+
+            node.addEventListener('change', () => {
+                GM_setValue(node.id, node.checked);
+            })
+        }
+    }
+
+    /**
+     * 关闭弹窗
+     */
+    function closeSettingWindow() {
+        document.body.removeChild(document.querySelector('.setting-popup'));
+    }
 
     /**
      * 获取 X 天前的日期
@@ -94,6 +205,11 @@
                                     //* status = 0 -> 未开奖，2 -> 已开奖
                                     if (response.data.data.status == '2') {
                                         deleteDynamic(data);
+
+                                        if (GM_getValue('set-unfollow')
+                                            && data.orig.modules.module_author.following) {
+                                                saveUnfollowUser(data)
+                                        }
                                     }
                                 }
                             })
@@ -101,8 +217,14 @@
 
                         if (mode == 'user') {
                             //* 判断用户名 / UID
-                            if (input == data.orig.modules.module_author.name || parseInt(input) == data.orig.modules.module_author.mid) {
+                            if (input.indexOf(data.orig.modules.module_author.name) != -1
+                                || input.indexOf(data.orig.modules.module_author.mid) != -1) {
                                 deleteDynamic(data);
+
+                                if (GM_getValue('set-unfollow')
+                                    && data.orig.modules.module_author.following) {
+                                        saveUnfollowUser(data)
+                                }
                             }
                         }
 
@@ -119,13 +241,17 @@
                                         status = '2';
                                     }
                                 } else {
-                                    // code = -9999，无互动抽奖
-                                    status = '-9999';
+                                    status = '-9999'; // code = -9999，无互动抽奖
                                 }
 
                                 //* 比较动态与设定日期 + 排除互动抽奖未开奖的动态
                                 if (timestampToDate(dyn_timestamp) <= getBeforeDate(input) && status != '0') {
                                     deleteDynamic(data);
+
+                                    if (GM_getValue('set-unfollow')
+                                        && data.orig.modules.module_author.following) {
+                                            saveUnfollowUser(data)
+                                    }
                                 }
                             })
                         }
@@ -137,6 +263,11 @@
                     getDynamics(duid, offset, mode, input);
                 } else {
                     displayNotification('你已经到达了世界的尽头。');
+
+                    // 取关
+                    if (GM_getValue('set-unfollow')) {
+                        unfollowUser();
+                    }
                 }
             }
         })
@@ -150,12 +281,12 @@
         //* csrf 参数 -> 从 cookie 获取 bili_jct
         let delete_api = 'https://api.bilibili.com/x/dynamic/feed/operate/remove?csrf=' + getCookie(' bili_jct');
         let re_id_str = item.id_str; // 转发动态的 ID
-        console.log('[Bili.Auto.Del] ' + re_id_str); // 控制台输出动态的 ID
+        console.log('[' + GM_info.script.name + ']', 'https://www.bilibili.com/opus/' + re_id_str); // 控制台输出动态网址
 
         axios({
             method: 'post',
             url: delete_api,
-            withCredentials: true, // 跨域使用凭证
+            withCredentials: true,
             data: {
                 dyn_id_str: re_id_str
             }
@@ -165,6 +296,48 @@
                 displayNotification(re_id_str + ' 删除成功。');
             }
         })
+    }
+
+    /**
+     * 删除动态
+     * @param {object} data 每条动态的信息
+     */
+    function saveUnfollowUser(data) {
+        let unfollow_arr = GM_getValue('unfollow-list'),
+        uid = data.orig.modules.module_author.mid;
+        if (unfollow_arr.indexOf(uid) == -1) {
+            unfollow_arr.push(uid);
+            GM_setValue('unfollow-list', unfollow_arr);
+        }
+    }
+
+    /**
+     * 取关用户
+     */
+    function unfollowUser() {
+        let unfollow_api = 'https://api.bilibili.com/x/relation/modify';
+        let unfollow_list = GM_getValue('unfollow-list');
+
+        for (let uid of unfollow_list) {
+            // console.log(uid + ' 取关成功。');
+            axios({
+                method: 'post',
+                url: unfollow_api,
+                withCredentials: true,
+                data: {
+                    fid: uid,
+                    act: 2,
+                    re_src: 11,
+                    spmid: '333.999.0.0',
+                    csrf: getCookie(' bili_jct')
+                }
+            })
+            .then(function(response) {
+                if (response.data.code == '0') {
+                    displayNotification(uid + ' 取关成功。');
+                }
+            })
+        }
     }
 
     /**
@@ -203,10 +376,10 @@
         let duid = getCookie(' DedeUserID');
         let input = '';
         if (mode == 'user') {
-            input = prompt('请输入想要删除的用户名或 UID:');
+            input = prompt('请输入想要删除的用户名或 UID (多个则用英文逗号「,」进行分割) :');
         }
         if (mode == 'days_ago') {
-            input = prompt('请输入想要删除多少天前的动态 (整数即可):');
+            input = prompt('请输入想要删除多少天前的动态 (整数即可) :');
         }
 
         if(duid == undefined) {
@@ -216,18 +389,31 @@
         }
     }
 
-    /** 删除源动态已开奖 / 已删除对应的转发动态 */
+    /**
+     * 删除源动态已开奖 / 已删除对应的转发动态
+     */
     GM_registerMenuCommand('自动判断', () => {
         start('auto');
     })
 
-    /** 删除源动态用户名 / UID对应的转发动态 */
+    /**
+     * 删除源动态用户名 / UID对应的转发动态
+     */
     GM_registerMenuCommand('指定用户', () => {
         start('user');
     })
 
-    /** 删除X天前发布的源动态对应的转发动态 */
+    /**
+     * 删除X天前发布的源动态对应的转发动态
+     */
     GM_registerMenuCommand('删除X天前的转发动态', () => {
         start('days_ago');
+    })
+
+    /**
+     * 打开设置弹窗
+     */
+    GM_registerMenuCommand('打开设置', () => {
+        openSettingWindow();
     })
 })();
