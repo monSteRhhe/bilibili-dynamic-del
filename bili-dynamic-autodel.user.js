@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bili.Dynamic.AutoDel
 // @namespace    https://github.com/
-// @version      2023.08.05
+// @version      2024.03.03
 // @description  删除B站转发的已开奖动态和源动态已被删除的动态。
 // @author       monSteRhhe
 // @match        http*://*.bilibili.com/*
@@ -80,7 +80,11 @@
             font-size: 85%;
         }
         `;
-    GM_addStyle(style);
+
+    function compress(css_string) {
+        return css_string.replace(/\s*/g, '');
+    }
+    GM_addStyle(compress(style));
 
     /**
      * 打开设置弹窗
@@ -137,9 +141,9 @@
         let d = new Date();
         d.setDate(d.getDate() - num);
         let year = d.getFullYear(),
-        month = d.getMonth() + 1, // getMonth() 返回的值为月份数-1
-        day = d.getDate(),
-        before_date = year + '-' + (month < 10 ? ('0' + month) : month) + '-' + (day < 10 ? ('0' + day) : day);
+            month = d.getMonth() + 1, // getMonth() 返回的值为月份数-1
+            day = d.getDate(),
+            before_date = year + '-' + (month < 10 ? ('0' + month) : month) + '-' + (day < 10 ? ('0' + day) : day);
         return before_date;
     }
 
@@ -150,10 +154,10 @@
      */
     function timestampToDate(ts) {
         let date = new Date(ts * 1000),
-        year = date.getFullYear(),
-        month = date.getMonth() + 1,
-        day = date.getDate(),
-        dyn_date = year + '-' + (month < 10 ? ('0' + month) : month) + '-' + (day < 10 ? ('0' + day) : day);
+            year = date.getFullYear(),
+            month = date.getMonth() + 1,
+            day = date.getDate(),
+            dyn_date = year + '-' + (month < 10 ? ('0' + month) : month) + '-' + (day < 10 ? ('0' + day) : day);
         return dyn_date;
     }
 
@@ -165,8 +169,8 @@
      * @param {string} input 输入的内容
      */
     function getDynamics(duid, offset, mode, input) {
-        let dynamics_api = 'https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?offset=' + offset + '&host_mid=' + duid; // 动态 API
-        let lottery_api = 'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?business_type=4&business_id='; // 互动抽奖 API
+        let dynamics_api = 'https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?offset=' + offset + '&host_mid=' + duid, // 动态 API
+            lottery_api = 'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?business_type=4&business_id='; // 互动抽奖 API
 
         axios({
             url: dynamics_api,
@@ -175,13 +179,13 @@
         .then(function(response) {
             if (offset == '') {
                 if (mode == 'auto') {
-                    displayNotification('开始自动判断删除互动抽奖动态。');
+                    sendNotification('开始自动判断删除互动抽奖动态。');
                 }
                 if (mode == 'user') {
-                    displayNotification('开始删除转发用户 ' + input + ' 的动态。');
+                    sendNotification('开始删除转发用户 ' + input + ' 的动态。');
                 }
                 if (mode == 'days_ago') {
-                    displayNotification('开始删除 ' + getBeforeDate(input) + ' 之前的动态。');
+                    sendNotification('开始删除 ' + getBeforeDate(input) + ' 之前的动态。');
                 }
             }
 
@@ -229,8 +233,8 @@
                         }
 
                         if (mode == 'days_ago') {
-                            let dyn_timestamp = data.orig.modules.module_author.pub_ts; // 源动态发布时间戳 (秒)
-                            let status = '0';
+                            let dyn_timestamp = data.orig.modules.module_author.pub_ts, // 源动态发布时间戳 (秒)
+                                status = '0';
                             axios({
                                 url: lottery_api + orig_id_str
                             })
@@ -262,7 +266,7 @@
                 if (offset != '') {
                     getDynamics(duid, offset, mode, input);
                 } else {
-                    displayNotification('你已经到达了世界的尽头。');
+                    sendNotification('你已经到达了世界的尽头。');
 
                     // 取关
                     if (GM_getValue('set-unfollow')) {
@@ -279,8 +283,8 @@
      */
     function deleteDynamic(item) {
         //* csrf 参数 -> 从 cookie 获取 bili_jct
-        let delete_api = 'https://api.bilibili.com/x/dynamic/feed/operate/remove?csrf=' + getCookie(' bili_jct');
-        let re_id_str = item.id_str; // 转发动态的 ID
+        let delete_api = 'https://api.bilibili.com/x/dynamic/feed/operate/remove?csrf=' + getCookie(' bili_jct'),
+            re_id_str = item.id_str; // 转发动态的 ID
         console.log('[' + GM_info.script.name + ']', 'https://www.bilibili.com/opus/' + re_id_str); // 控制台输出动态网址
 
         axios({
@@ -293,7 +297,7 @@
         })
         .then(function(response) {
             if (response.data.code == '0') {
-                displayNotification(re_id_str + ' 删除成功。');
+                sendNotification(re_id_str + ' 删除成功。');
             }
         })
     }
@@ -304,7 +308,7 @@
      */
     function saveUnfollowUser(data) {
         let unfollow_arr = GM_getValue('unfollow-list'),
-        uid = data.orig.modules.module_author.mid;
+            uid = data.orig.modules.module_author.mid;
         if (unfollow_arr.indexOf(uid) == -1) {
             unfollow_arr.push(uid);
             GM_setValue('unfollow-list', unfollow_arr);
@@ -315,8 +319,8 @@
      * 取关用户
      */
     function unfollowUser() {
-        let unfollow_api = 'https://api.bilibili.com/x/relation/modify';
-        let unfollow_list = GM_getValue('unfollow-list');
+        let unfollow_api = 'https://api.bilibili.com/x/relation/modify',
+            unfollow_list = GM_getValue('unfollow-list');
 
         for (let uid of unfollow_list) {
             // console.log(uid + ' 取关成功。');
@@ -334,7 +338,7 @@
             })
             .then(function(response) {
                 if (response.data.code == '0') {
-                    displayNotification(uid + ' 取关成功。');
+                    sendNotification(uid + ' 取关成功。');
                 }
             })
         }
@@ -344,7 +348,7 @@
      * 显示通知
      * @param {string} msg 发送的通知消息
      */
-    function displayNotification(msg) {
+    function sendNotification(msg) {
         GM_notification({
             text: msg,
             title: GM_info.script.name,
@@ -359,10 +363,10 @@
      * @returns 返回 cookie 的值
      */
     function getCookie(key) {
-        var cookieArr = document.cookie.split(';');
+        let cookieArr = document.cookie.split(';');
         for (var i = 0; i < cookieArr.length; i++) {
             if (cookieArr[i].split('=')[0] == key) {
-                var value = cookieArr[i].split('=')[1];
+                let value = cookieArr[i].split('=')[1];
                 return value;
             }
         }
@@ -373,18 +377,27 @@
      * @param {string} mode 选择的模式
      */
     function start(mode) {
-        let duid = getCookie(' DedeUserID');
-        let input = '';
-        if (mode == 'user') {
-            input = prompt('请输入想要删除的用户名或 UID (多个则用英文逗号「,」进行分割) :');
-        }
-        if (mode == 'days_ago') {
-            input = prompt('请输入想要删除多少天前的动态 (整数即可) :');
-        }
+        let duid = getCookie(' DedeUserID'),
+            input = '';
 
         if(duid == undefined) {
-            displayNotification('未检测到登录状态。'); // 未登录时 DedeUserID 未定义
+            sendNotification('未检测到登录状态。'); // 未登录时 DedeUserID 未定义
         } else {
+            if (mode == 'user') {
+                input = prompt('请输入想要删除的用户名或 UID (多个则用英文逗号「,」进行分割) :');
+                if (input == '' || input == undefined) {
+                    sendNotification('没有输入内容！')
+                    return false
+                }
+            }
+            if (mode == 'days_ago') {
+                input = prompt('请输入想要删除多少天前的动态 (整数即可) :');
+                if (!isNaN(input)) {
+                    sendNotification('输入错误！')
+                    return false;
+                }
+            }
+
             getDynamics(duid, '', mode, input);
         }
     }

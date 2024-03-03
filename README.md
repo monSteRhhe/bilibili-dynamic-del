@@ -24,7 +24,7 @@
 
 2. 指定用户：点击后在弹出窗口输入用户名或者该用户的数字UID并确定，能够删除源动态的作者是该用户的转发动态。
 
-3. 删除X天前的转发动态：点击后在弹出窗口输入往前的天数，源动态在这天以及之前的日期发布的转发动态会被删除。 ([issue #3](https://github.com/monSteRhhe/bilibili-dynamic-del/issues/3))
+3. 删除X天前的转发动态：点击后在弹出窗口输入往前的天数，源动态在这天以及之前的日期发布的转发动态会被删除。 ([issue #3](https://github.com/monSteRhhe/bilibili-dynamic-del/issues/3)) 输入为空时继续操作的问题已解决，时间间隔还没整。([issue #6](https://github.com/monSteRhhe/bilibili-dynamic-del/issues/6))
 
 4. 打开设置：点击后弹出设置窗口，如下图：
 
