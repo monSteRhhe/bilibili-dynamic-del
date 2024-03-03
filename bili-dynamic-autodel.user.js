@@ -34,7 +34,7 @@
     /**
      * 弹窗样式
      */
-    const style = `
+    let style = `
         .setting-content {
             color: #000;
             z-index: 10;
@@ -81,10 +81,7 @@
         }
         `;
 
-    function compress(css_string) {
-        return css_string.replace(/\s*/g, '');
-    }
-    GM_addStyle(compress(style));
+    GM_addStyle(style);
 
     /**
      * 打开设置弹窗
