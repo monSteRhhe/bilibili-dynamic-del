@@ -1,5 +1,11 @@
 <div align="center"><img src="https://socialify.git.ci/monSteRhhe/bilibili-dynamic-del/image?font=Inter&language=1&name=1&pattern=Plus&stargazers=1&theme=Light"/></div>
 
+
+
+**已经看到了大伙的反馈，最近这段时间来总是忙于各种事情，等做好了安排开始着手一些修改**
+
+
+
 ## 功能
 
 1. 自动删除B站 **已开奖的转发抽奖** 动态和 **源动态已被删除** 的动态；
